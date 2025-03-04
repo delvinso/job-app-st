@@ -307,12 +307,11 @@ def create_network_graph(category, filtered_pairs, dates_for_title, layout_algo,
         mode='markers',
         hoverinfo='text',
         marker=dict(
-            showscale=True,
+            showscale=False,    # keep rest of arguments in case we want this back
             colorscale='YlGnBu',
             reversescale=True,
             color=[],
             size=[],
-            colorbar=dict(thickness=15, title='Node Connections', xanchor='left', titleside='right'),
             line_width=2),
         name='Nodes')
 
@@ -341,7 +340,7 @@ def create_network_graph(category, filtered_pairs, dates_for_title, layout_algo,
     fig = go.Figure(data=edge_traces + [node_trace, label_trace],  
                     layout=go.Layout(
                                   title=f'{category} - {dates_for_title}',
-                        titlefont_size=16,
+                        # titlefont_size=16,
                         showlegend=False,
                         hovermode='closest',
                         autosize=True,
