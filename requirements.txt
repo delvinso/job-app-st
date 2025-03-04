@@ -1,0 +1,7 @@
+streamlit 
+unidecode
+requests
+pandas
+plotly
+networkx
+scipy
