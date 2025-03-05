@@ -124,7 +124,10 @@ def display_top_metrics(summary_df):
         col1, col2, col3 = st.columns([3, 3, 3])
 
         with col2:
-            st.metric(label=f"{i+1}th Largest Category", value=f"{cat['job_category']} ({cat['counts']:,})")
+            suffix = "th"
+            if i == 1:
+                suffix = "nd"
+            st.metric(label=f"{i+1}{suffix} Largest Category", value=f"{cat['job_category']} ({cat['counts']:,})")
 
         with col3:
             median_salary = cat['median_mid_salary']
