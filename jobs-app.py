@@ -110,13 +110,13 @@ def display_top_metrics(summary_df):
         st.metric(label="Total Jobs", value=f"{total_jobs:,}")
 
     with col2:
-        st.metric(label="Largest Category", value=f"{top_category['job_category']} ({top_category['counts']:,})")
+        st.metric(label=f"Largest Category (n = {top_category['counts']:,})", value=f"{top_category['job_category']}")
 
     with col3:
         median_salary = top_category['median_mid_salary']
         mid_level_count = top_category.get('mid_level_count', 0)
-        salary_text = f"${median_salary:,.0f} ({mid_level_count:,})"
-        st.metric(label="Median Salary (USD; last 3 months)", value=salary_text)
+        salary_text = f"${median_salary:,.0f}"
+        st.metric(label=f"Median Salary (USD; last 3 months, n = {mid_level_count:,})", value=salary_text)
 
     # display additional categories
     for i in range(1, len(top_categories)):
@@ -129,13 +129,13 @@ def display_top_metrics(summary_df):
                 suffix = "nd"
             if i == 2: 
                 suffix = "rd"
-            st.metric(label=f"{i+1}{suffix} Largest Category", value=f"{cat['job_category']} ({cat['counts']:,})")
+            st.metric(label=f"{i+1}{suffix} Largest Category (n = {cat['counts']:,})", value=f"{cat['job_category']}")
 
         with col3:
             median_salary = cat['median_mid_salary']
             mid_level_count = cat.get('mid_level_count', 0)
-            salary_text = f"${median_salary:,.0f} ({mid_level_count:,})"
-            st.metric(label="Median Mid-Level Salary (USD; last 3 months)", value=salary_text)
+            salary_text = f"${median_salary:,.0f}"
+            st.metric(label=f"Median Mid-Level Salary (USD; last 3 months, n = {mid_level_count:,})", value=salary_text)
 
 st.sidebar.title("Menu")
 st.sidebar.caption("""
