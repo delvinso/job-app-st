@@ -127,6 +127,8 @@ def display_top_metrics(summary_df):
             suffix = "th"
             if i == 1:
                 suffix = "nd"
+            if i == 2: 
+                suffix = "rd"
             st.metric(label=f"{i+1}{suffix} Largest Category", value=f"{cat['job_category']} ({cat['counts']:,})")
 
         with col3:
