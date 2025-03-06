@@ -6,7 +6,7 @@ st.set_page_config(layout="wide")
 from stoc import stoc
 from datetime import datetime
 
-toc = stoc()
+
 API_BASE_URL = "https://api.careerinsights.me"
 
 @st.cache_data
@@ -140,6 +140,38 @@ st.sidebar.caption("""
                    These options are only for the **skills heatmap** and **network analysis**. 
                    """)
 
+job_titles = ['Machine Learning Engineer', 'Software Engineer', 'Data Engineer', 'Data Scientist', 'Data Analyst']
+SENIORITY_MAPPING = {
+    "Intern": "intern",
+    "Entry": "entry",
+    "Mid": "mid",
+    "Senior": "senior"
+}
+selected_display = st.sidebar.radio(
+    "Select a seniority level",
+    list(SENIORITY_MAPPING.keys()),  
+    index=2,
+    horizontal=True
+)
+
+# fetch the corresponding backend value
+selected_seniority = SENIORITY_MAPPING[selected_display]
+
+selected_job_category = st.sidebar.radio(
+    "Select a pre-defined job title",
+    job_titles,
+    index=2,
+    horizontal=False
+)
+
+available_countries = ['All', 'US', 'Canada']
+selected_country = st.sidebar.radio("Countries",
+                                     available_countries,
+                                     horizontal=True).lower()
+
+
+toc = stoc()
+
 st.title("North American Tech Career Insights")
 
 st.markdown("""
@@ -149,29 +181,6 @@ For more information on the architecture of the pipeline, please scroll to the b
             
 """)
 
-job_titles = ['Machine Learning Engineer', 'Software Engineer', 'Data Engineer', 'Data Scientist', 'Data Analyst']
-SENIORITY_MAPPING = {
-    "Intern": "intern",
-    "Entry Level": "entry",
-    "Mid-Level": "mid",
-    "Senior-Level": "senior"
-}
-selected_display = st.sidebar.radio(
-    "Select a seniority level",
-    list(SENIORITY_MAPPING.keys()),  
-    index=2 
-)
-# fetch the corresponding backend value
-selected_seniority = SENIORITY_MAPPING[selected_display]
-
-selected_job_category = st.sidebar.radio(
-    "Select a pre-defined job title",
-    job_titles,
-    index=2
-)
-
-available_countries = ['All', 'US', 'Canada']
-selected_country = st.sidebar.radio("Countries", available_countries).lower()
 
 # if filter_job_categories:
 #     jobs = jobs[jobs['source'] == 'regex']
@@ -347,7 +356,7 @@ The pipeline, which is containerized and hosted on an Oracle Cloud Infrastructur
     - Exact job description using a hash
     - Near-deduplication, which accounts for the same job posting posted on different sites or re-posted with slight format changes using the SimHash algorithm and a fingerprint index which compares job descriptions textual similarity by fragmenting and hashing them. This step relies on an index that's saved to disk and tightly coupled to insertion into the database. 
 4. Jobs are inserted into a table into the database.
-    - 'Unknown' job categories are passed through a fine-tuned DistilBERT model to classify them into one of 6 categories using their job descriptions. The model was fine tuned on 55 336 job postings with an average F1 score of 0.87.  Inference is able to assign a relevant job title to 34% of previously unknown job postings, equating to 9 670 out of 24136 entries as of October 15th, 2024. Of the final dataset, about 10% are from inference.
+    - 'Unknown' job categories are passed through a fine-tuned DistilBERT model to classify them into one of 6 categories using their job descriptions. The model was fine tuned on 55 336 job postings with an average F1 score of 0.87.  Inference is able to assign a relevant job title to 30.4% of previously unknown job postings, equating to 17 665 out of 58 028 entries as of March 5th, 2025. Of the final dataset, about 12% are from inference.
     - All job postings except for those that were categorized as 'Irrelevant', are then sent to the OpenAI Batch API (vs. the synchronous API, saving on 50% of the costs) for parsing attributes such as salary, job type, seniority level, etc using Function Calls. Results are then awaited by batch, cleaned, and inserted in the database. 
 5. After inference is complete, a dbt model is run to extract skills from relevant job titles from a) the raw postings table and b) the inference table. 
 6. Lastly, a final dbt model is run to combine the scraped job attributes, the extracted skills, and the OpenAI parsed attributes into a single table, and

@@ -260,6 +260,7 @@ def create_network_graph(category, filtered_pairs, dates_for_title, layout_algo,
     
     # 'filtered_pairs' is a list of {"pair": [...], "count": ...}
     # add edges to the graph with weights as the frequency of co-occurrence
+
     for item in filtered_pairs:
         pair = item["pair"]          # e.g., ["aws","git"]
         weight = item["count"]
