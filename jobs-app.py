@@ -47,13 +47,12 @@ def get_seniority_stats_data(smoothing_window=3, keep_predicted_jobs = True):
     return pd.DataFrame(data)
 
 @st.cache_data
-def get_skill_proportions_data(job_category=None, threshold=10, seniority=None):
+def get_skill_proportions_data(job_category=None, threshold=10, seniority=None, country = None):
     params = {"threshold": threshold,        
-             "seniority": seniority
              }
     if job_category:
         job_category = job_category.lower().replace(' ', '_')
-    r = requests.get(f"{API_BASE_URL}/skill_proportions/{job_category}", params=params)
+    r = requests.get(f"{API_BASE_URL}/skill_proportions/by_category/{job_category}/{country}/{seniority}", params=params)
     r.raise_for_status()
     data = r.json()
     if isinstance(data, dict) and "results" in data:
@@ -61,15 +60,14 @@ def get_skill_proportions_data(job_category=None, threshold=10, seniority=None):
     return pd.DataFrame(data)
 
 @st.cache_data
-def get_skill_frequencies_data(job_category=None, proportion_threshold=0.01, min_edge_frequency=20, seniority=None):
+def get_skill_frequencies_data(job_category=None, proportion_threshold=0.01, min_edge_frequency=20, seniority=None, country = None):
     params = {
-        "proportion_threshold": proportion_threshold,
-        "seniority": seniority
+        # "proportion_threshold": proportion_threshold,
         # "min_edge_frequency": min_edge_frequency
     }
     if job_category:
         job_category = job_category.lower().replace(' ', '_')
-    r = requests.get(f"{API_BASE_URL}/skill_frequencies/{job_category}", params=params)
+    r = requests.get(f"{API_BASE_URL}/skill_frequencies/by_category/{job_category}/{country}/{seniority}", params=params)
     r.raise_for_status()
     data = r.json()
     if isinstance(data, dict) and "results" in data:
@@ -151,24 +149,29 @@ For more information on the architecture of the pipeline, please scroll to the b
             
 """)
 
-# placeholder
 job_titles = ['Machine Learning Engineer', 'Software Engineer', 'Data Engineer', 'Data Scientist', 'Data Analyst']
-seniorities = ['Intern', "Entry Level", "Mid-Level", "Senior-Level"]
+SENIORITY_MAPPING = {
+    "Intern": "intern",
+    "Entry Level": "entry",
+    "Mid-Level": "mid",
+    "Senior-Level": "senior"
+}
+selected_display = st.sidebar.radio(
+    "Select a seniority level",
+    list(SENIORITY_MAPPING.keys()),  
+    index=2 
+)
+# fetch the corresponding backend value
+selected_seniority = SENIORITY_MAPPING[selected_display]
 
-selected_job_category = st.sidebar.selectbox(
+selected_job_category = st.sidebar.radio(
     "Select a pre-defined job title",
     job_titles,
     index=2
 )
 
-selected_seniority = st.sidebar.selectbox(
-    "Select a seniority level",
-    seniorities,
-    index=2
-)
-
-# available_countries = ['us', 'canada']
-# selected_countries = st.sidebar.multiselect("Countries", available_countries,  default=['us', 'canada'])
+available_countries = ['All', 'US', 'Canada']
+selected_country = st.sidebar.radio("Countries", available_countries).lower()
 
 # if filter_job_categories:
 #     jobs = jobs[jobs['source'] == 'regex']
@@ -226,7 +229,7 @@ toc.h2("Trends in Technologies")
 st.markdown(
 """
     This analysis identifies trends in skill demand across various job categories, countries, and seniority levels (the latter two TBD). 
-    By normalizing skill occurrences as a percentage of total job postings per month, the heatmap highlights the most sought-after skills and their fluctuations over time
+    By normalizing skill occurrences as a percentage of total job postings per month, the heatmap highlights the most sought-after skills and their fluctuations over time.
 """)
 with st.container():
     col1, col2 = st.columns([0.2, 1])
@@ -234,6 +237,7 @@ with st.container():
     df_skill_props = get_skill_proportions_data(
             job_category=selected_job_category, 
             seniority = selected_seniority,
+            country = selected_country,
             threshold=10
     )
 
@@ -271,7 +275,7 @@ with st.container():
     col3, col4 = st.columns([1, 0.4])
 
     with col4:
-        edge_scaling_factor = st.slider('Edge Scaling Factor', min_value=1.0, max_value=10.0, value=5.0, step=0.5)
+        edge_scaling_factor = st.slider('Edge Scaling Factor', min_value=1.0, max_value=10.0, value=3.0, step=0.5)
         st.markdown('Data used is since 2024-06-01.')
         # st.markdown('Defaults to year to date.')
         current_date = datetime.today()
@@ -292,6 +296,7 @@ with st.container():
             skill_freq_data = get_skill_frequencies_data(
                 job_category=selected_job_category, 
                 seniority = selected_seniority,
+                country = selected_country,
                 proportion_threshold=0.01, 
                 # min_edge_frequency=min_edge
             )
@@ -319,7 +324,7 @@ Interpreting the Network Graph
 
 st.markdown("""
 TODO:
-- add country filters to skill frequencies and proportions
+- ~~add country filters to skill frequencies and proportions on back-end (db/api) and front-end~~
 - add date filter to skill frequencies
 - facilitate analyses by user input title
             """)
