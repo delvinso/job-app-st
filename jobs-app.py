@@ -7,7 +7,7 @@ from stoc import stoc
 from datetime import datetime
 
 
-API_BASE_URL = "https://api.careerinsights.me"
+API_BASE_URL = "https://api.11232020.xyz/"
 
 @st.cache_data
 def get_summary_stats_data():
